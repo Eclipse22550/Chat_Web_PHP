@@ -33,8 +33,14 @@
     </div>
     <div class="fields">
         <input type="password" name="password" placeholder="Password">
+        <p></p>
+        <input type="checkbox" name="rem[]" value="1"> Ricordati di me</input>
     </div>
     <div class="fields">
+        <p></p>
+        <p></p>
+        <div class="g-signin2" data-onsuccess="onSignIn"></div>
+        <p></p>
         <button type="submit" class="login" name="login">Accedi</button>
     </div>
     <a href="register.php">Registrati</a>

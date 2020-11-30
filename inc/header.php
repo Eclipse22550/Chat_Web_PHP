@@ -17,6 +17,8 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://use.fontawesome.com/releases/v5.0.4/css/all.css" rel="stylesheet">
     <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="chat-297210.apps.googleusercontent.com">
 </head>
 <body id="body">
     <?php if(Session::get("login") == TRUE){ ?>
@@ -54,6 +56,15 @@
                 <a class="nav__link">           
                     <i class="fas fa-sign-out-alt nav__icon"></i>
                     <span class="nav__text">Logout</span>
+                    <a href="#" onclick="signOut();">Sign out</a>
+                    <script>
+                      function signOut() {
+                        var auth2 = gapi.auth2.getAuthInstance();
+                        auth2.signOut().then(function () {
+                          console.log('User signed out.');
+                        });
+                      }
+                    </script>
                 </a>
             </nav>
         </div>

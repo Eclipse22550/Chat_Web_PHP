@@ -8,10 +8,10 @@
             $this->db = new Database();
         }
         //Funzione formato della data
-        public function formatDate($date){
+        /*public function formatDate($date){
             $strtime = strotime($date);
             return date('Y-m-d H:i:s', $strtime);
-        }
+        }*/
         //Funzione per verificare se l'email è già in uso
         //Argomenti: "email"
         public function checkEmail($email){
@@ -266,6 +266,13 @@
                 return $msg;
             }else{
                 if($checkCredential == TRUE || $online != TRUE){
+                    if(!empty($_POST['rem'])){
+                        foreach($_POST['rem'] as $value){
+                            setcookie($username, $password, $value, time() + (86400 * 30), "/");
+                        }
+                    }else{
+                        setcookie($username, $password, '25', time() + (86400 * 30), "/");
+                    }
                     Session::init();
                     Session::set('login', TRUE);
                     Session::set('user_code', $checkCredential->user_code);
@@ -282,14 +289,14 @@
             }
         }
         //Funzione per il login guest
-        public function userGuestLoginAuthotication($data){
+        /*public function userGuestLoginAuthotication($data){
             $username = $data['username'];
             $guest_code = rand(10, 1000000);
 
             $checkUsername = $this->checkUsername($username);
             $checkGuest = $this->checkGuest($username);
 
-            if($username == "" || $password == ""){
+            if($username == ""){
                 $msg = 'Compilare i campi di input';
                 return $msg;
             }else if($checkUsername == TRUE || $checkGuest == TRUE){
@@ -310,8 +317,6 @@
                     Session::init();
                     Session::set('login', TRUE);
                     Session::set('username', $result->username);
-                    Session::set('type', $result->type);
-                    Session::set('status', $result->status);
                     Session::set('msg', 'Hai effettuato il login con successo');
                     echo "<script>location.href='index.php';</script>";
                 }else{
@@ -319,7 +324,7 @@
                     return $msg;
                 }
             }
-        }
+        }*/
         //Funzione per aggiornare i dati utente
         public function updateUserDataSimply($data){
 
