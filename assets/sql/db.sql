@@ -1,4 +1,4 @@
-CREATE DATABASE cl_chat;
+CREATE DATABASE chat;
 
 CREATE TABLE IF NOT EXISTS u_login (
     id int(11) NOT NULL AUTO_INCREMENT,
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS u_login (
     vis int(32) NOT NULL DEFAULT '0',
     checking tinyint(4) NOT NULL DEFAULT '0',
     type int(32) NOT NULL DEFAULT '0',
+    warning tinyint(4) NOT NULL DEFAULT '0',
     login_at time NOT NULL, 
     logout_at time NOT NULL,
     status text(50) NOT NULL DEFAULT '0',
@@ -33,13 +34,14 @@ CREATE TABLE IF NOT EXISTS u_login (
 
 CREATE TABLE IF NOT EXISTS u_guest(
     id int(11) NOT NULL AUTO_INCREMENT,
-    guest_code int(11) NOT NULL,
-    username char(128) NOT NULL,
-    isActive int(32) NOT NULL,
-    type tinyint(4) NOT NULL,
+    guest_code int(11) NOT NULL DEFAULT '0',
+    username char(128) NOT NULL DEFAULT '0',
+    isActive int(32) NOT NULL DEFAULT '0',
+    type tinyint(4) NOT NULL DEFAULT '0',
+    warning tinyint(4) NOT NULL DEFAULT '0',
     login_at datetime NOT NULL,
     logout_at datetime NOT NULL,
-    status text(50) NOT NULL,
+    status text(50) NOT NULL DEFAULT '0',
     PRIMARY KEY(id),
     UNIQUE(guest_code)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -55,7 +57,8 @@ CREATE TABLE IF NOT EXISTS c_search(
     age int(11) NOT NULL,
     sex int(32) NOT NULL DEFAULT '0',
     photo varchar(255) NOT NULL,
-    scope text(100) NOT NULL DEFAULT '0',
+    type text(100) NOT NULL DEFAULT '0',
+    vis int(32) NOT NULL DEFAULT '0',
     isActive int(32) NOT NULL,
     roleid int(32) NOT NULL,
     PRIMARY KEY(id),
@@ -132,6 +135,7 @@ ADD FOREIGN KEY(bannator_user) REFERENCES u_login(user_code) ON UPDATE CASCADE O
 ALTER TABLE c_search
 ADD FOREIGN KEY(sex) REFERENCES m_coder(code) ON UPDATE CASCADE ON DELETE CASCADE,
 ADD FOREIGN KEY(isActive) REFERENCES m_coder(code) ON UPDATE CASCADE ON DELETE CASCADE,
+ADD FOREIGN KEY(vis) REFERENCES m_coder(code) ON UPDATE CASCADE ON DELETE CASCADE,
 ADD FOREIGN KEY(roleid) REFERENCES m_coder(code) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE u_guest

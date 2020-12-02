@@ -11,4 +11,5 @@ INSERT INTO m_coder (id, code, name, mix) VALUES
 (10, 1545, 'Custom', 'Tipo registrazione'),
 (11, 1546, 'Non definito', 'Genere'),
 (12, 1547, 'Maschile', 'Genere'),
-(13, 1548, 'Femminile', 'Genere');
+(13, 1548, 'Femminile', 'Genere'),
+(14, 1549, 'NA', 'Genere');

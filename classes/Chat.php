@@ -7,13 +7,10 @@
         public function __construct(){
             $this->db = new Database();
         }
-        //Funzione formato della data
         /*public function formatDate($date){
             $strtime = strotime($date);
             return date('Y-m-d H:i:s', $strtime);
         }*/
-        //Funzione per verificare se l'email è già in uso
-        //Argomenti: "email"
         public function checkEmail($email){
             $sql = "SELECT email FROM u_login WHERE email = :email";
             $stmt = $this->db->pdo->prepare($sql);
@@ -25,12 +22,9 @@
                 return false;
             }
         }
-        //Funczione per controllare se l'utente è ricercabile nel sistema
-        //Argomenti: "username"
         public function checkSearch($username){
-            $sql = "SELECT username FROM c_search WHERE username = :username";
+            $sql = "SELECT username FROM c_search WHERE username = '$username'";
             $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':username', $username);
             $stmt->execute();
             if($stmt->rowCount() > 0){
                 return true;
@@ -38,52 +32,49 @@
                 return false;
             }
         }
-        //Funzione per controllare le duplicità utente
-        //Argomenti: "username"
+        /*public function initSession($username){
+            $session_code = rand(10, 1000000);
+            $sql = "INSERT INTO t_session (session_code, session_name, session_token, session_usercode, session_ip, session_mac, session_localization, session_start, session_end) 
+                    VALUES()";
+        }*/
         public function checkUsername($username){
-            $sql = "SELECT username FROM u_login WHERE username = :username";
+            $sql = "SELECT * FROM u_login WHERE username = :username LIMIT 1";
             $stmt = $this->db->pdo->prepare($sql);
             $stmt->bindValue(':username', $username);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_OBJ);
         }
-        //Funzione per controllare le duplicità utente guest
-        //Argomenti: "username"
-        public function checkGuest($username){
-            $sql = "SELECT username FROM u_guest WHERE username = :username AND isActive = 1";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':username', $username);
-            $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_OBJ);
-        }
-        //Funczione per controllare lo stato dell'utente
-        //Argomenti: "username"
         public function checkActive($username){
-            $sql = "SELECT username FROM u_login WHERE username = :username AND isActive = :isActive";
+            $sql = "SELECT * FROM u_login 
+                    WHERE username = :username 
+                    and isActive = :isActive 
+                    LIMIT 1";
             $stmt = $this->db->pdo->prepare($sql);
             $stmt->bindValue(':username', $username);
             $stmt->bindValue(':isActive', 1536);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_OBJ);
         }
-        //Funzione per registrare utenti
         public function userRegistrationSemplice($data){
             $user_code = rand(10, 1000000);
+            $email = $data['email'];
             $username = $data['username'];
             $password = $data['password'];
-            $email = $data['email'];
-            
-            $checkEmail = $this->checkEmail($email);
+            $vis = $data['vis'];
+
             $checkUsername = $this->checkUsername($username);
 
-            if($email == "" || $username == "" || $password == ""){
-                $msg = 'Compilare tutti i campi di input !';
+            if($email == "" || $username == "" || $password == "" || $vis == "Scegli un origine"){
+                $msg = 'Compilare tutti i campi !';
                 return $msg;
-            }else if(strlen($username) <= 3){
-                $msg = 'Username troppo corto, minimo tre caratteri';
+            }else if($checkUsername == TRUE){
+                $msg = 'Username già in uso !';
+                return $msg;
+            }else if(strlen($username) < 3){
+                $msg = 'Username troppo corto, minimo 3 caratteri';
                 return $msg;
             }else if(strlen($password) < 5){
-                $msg = 'Password troppo corta, minimo 5 caratteri';
+                $msg = 'Password troppo cort, minimo 5 caratteri';
                 return $msg;
             }else if(!preg_match("#[0-9]+#",$password)){
                 $msg = 'La tua password deve contenere almeno un numero';
@@ -92,13 +83,7 @@
                 $msg = 'La tua password deve contenere almeno una lettera';
                 return $msg;
             }else if(filter_var($email, FILTER_VALIDATE_EMAIL === FALSE)){
-                $msg = 'Inidrizzo email non valido';
-                return $msg;
-            }else if($checkEmail == TRUE){
-                $msg = 'Email già registrata!';
-                return $msg;
-            }else if($checkUsername == TRUE){
-                $msg = 'Username già in uso !';
+                $msg = 'Formato email non valido';
                 return $msg;
             }else{
                 $sql = "INSERT INTO u_login (user_code, username, password, email, name, lname, age, sex, country, state, bio, hobby, photo, isActive, roleid, vis, checking, type, status) 
@@ -110,8 +95,8 @@
                 $stmt->bindValue(':email', $email);
                 $stmt->bindValue(':name', '-');
                 $stmt->bindValue(':lname', '-');
-                $stmt->bindValue(':age', 0);
-                $stmt->bindValue(':sex', 1546);
+                $stmt->bindValue(':age', 1549);
+                $stmt->bindValue(':sex', 1549);
                 $stmt->bindValue(':country', '-');
                 $stmt->bindValue(':state', '-');
                 $stmt->bindValue(':bio', '-');
@@ -123,223 +108,110 @@
                 $stmt->bindValue(':checking', 0);
                 $stmt->bindValue(':type', 1543);
                 $stmt->bindValue(':status', '-');
-                $result = $stmt->execute();
-                if($result){
-                    Session::init();
-                    Session::set('logMsg', 'Utente semplice creato');
-                    echo "<script>location.href='login.php';</script>";
+                $rsl = $stmt->execute();
+                if($rsl == TRUE){
+                    $sql1 ="INSERT INTO c_search 
+                            (user_code, username, bio, hobby, country, state, age, sex, photo, type, vis, isActive, roleid) 
+                            VALUES (:user_code, :username, :bio, :hobby, :country, :state, :age, :sex, :photo, :type, :vis, :isActive, :roleid)";
+                    $stmt = $this->db->pdo->prepare($sql1);
+                    $stmt->bindValue(':user_code', $user_code);
+                    $stmt->bindValue(':username', $username);
+                    $stmt->bindValue(':bio', '-');
+                    $stmt->bindValue(':hobby', '-');
+                    $stmt->bindValue(':country', '-');
+                    $stmt->bindValue(':state', '-');
+                    $stmt->bindValue(':age', 1549);
+                    $stmt->bindValue(':sex', 1549);
+                    $stmt->bindValue(':photo', '-');
+                    $stmt->bindValue(':type', 1543);
+                    $stmt->bindValue(':vis', 1538);
+                    $stmt->bindValue(':isActive', 1537);
+                    $stmt->bindValue(':roleid', 1540);
+                    $rslt1 = $stmt->execute();
+                    if($rslt1 == TRUE){
+                        /*$receiver = "$email";
+                        $subject = "Attivazione";
+                        $body = "
+                            Congratulazioni!!! Il tuo account è ora creato e attivo.
+                            Qui sotto un riepilogo delle tue informazioni:
+                            
+                            Username: $username
+                            Email: $email
+                            Tipo di registrazione: semplice
+
+                        ";
+                        $sender = "From:angeyimportante780@gmail.com";
+                        if(mail($receiver, $subject, $body, $sender)){
+                            $email_code = rand(10, 100000);
+                            $sql = "INSERT INTO s_email (email_code, receiver, subject, body, sender, mac_adress, ip_adress) 
+                                    VALUES (:email_code, :receiver, :subject, :body, :sender, :mac_adress, :ip_adress)";
+                            $stmt = $this->db->pdo->prepare($sql);
+                            $stmt->bindValue(':email_code', $email_code);
+                            $stmt->bindValue(':receiver', $receiver);
+                            $stmt->bindValue(':subject', $subject);
+                            $stmt->bindValue(':body', $body);
+                            $stmt->bindValue(':sender', $sender);
+                            $stmt->bindValue(':mac_adress', '15A');
+                            $stmt->bindValue(':ip_adress', '192.168.1.20');
+                            $rslt5 = $stmt->execute();
+                            if($rslt5 == TRUE){*/
+                                $msg = 'Utente creato';
+                                return $msg;
+                            /*}else{
+                                $msg = 'Insert 3 fallito';
+                                return $msg;
+                                exit();
+                            }
+                        }*/
+                    }else{
+                        $msg = 'Insert 2 fallito';
+                        return $msg;
+                    }
                 }else{
-                    $msg = 'Problemi con la registrazione';
+                    $msg = 'Oops, qualcosa è andato storto';
                     return $msg;
                 }
             }
         }
-        //Funzione per inviare email
-        //Argomenti richiesti: "email, subject, body, sender, mac, ip"
-        public function sendEmail($email,$subject,$body,$sender,$mac,$ip){
-            $email_code = rand(10, 10000000);
-            $sql = "INSERT INTO email (email_code, receiver, subject, body, sender, mac_adress, ip_adress) 
-                    VALUES(:email_code, :receiver, :subject, :body, :sender, :mac_adress, :ip_adress)";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':email_code', $email_code);
-            $stmt->bindValue(':receiver', $email);
-            $stmt->bindValue(':subject', $subject);
-            $stmt->bindValue(':body', $body);
-            $stmt->bindValue(':sender', 'angeyimportante780@gmail.com');
-            $stmt->bindValue(':mac_adress', $mac);
-            $stmt->bindValue(':ip_adress', $ip);
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per il login degli utenti in visita
-        public function loginGuest($data){
-            //
-        }
-        //Funzione per chiudere la sessione di navigazione
-        //Argomenti: "state" || funzioni interne: "date("h:i", time())"
-        public function updateCloseState($state){
-            $sql = "UPDATE u_login SET logout_at = :date AND status = :state WHERE user_code = :user_code";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':date', date("h:i", time()));
-            $stmt->bindValue(':state', $state);
-            $stmt->bindValue(':user_code', Session::get("user_code"));
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per aprire la sessione di navigazione
-        //Argomenti: "state" || funzioni interne: "date("h:i", time())"
-        public function updateOpenState($state){
-            $sql = "UPDATE u_login SET login_at = :date AND status = :state WHERE user_code = :user_code";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':date', date("h:i", time()));
-            $stmt->bindValue(':state', $state);
-            $stmt->bindValue(':user_code', Session::get("user_code"));
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per disabilitare l'utente guest dopo un utilizzo
-        public function disableGuest($guest_code){
-            $sql = "UPDATE u_guest SET isActive = :isActive WHERE guest_code = :code";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':code', $guest_code);
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per verificare i dati di accesso
-        //Argomenti: "username || password"
         public function checkCredential($username, $password){
             $password = hash("SHA512", $password);
-            $sql = "SELECT username, password FROM u_login WHERE username = :username AND password = :password";
+            $sql = "SELECT * FROM u_login WHERE username = :username and password = :password LIMIT 1";
             $stmt = $this->db->pdo->prepare($sql);
             $stmt->bindValue(':username', $username);
             $stmt->bindValue(':password', $password);
-            $result = $stmt->execute();
+            $stmt->execute();
             return $stmt->fetch(PDO::FETCH_OBJ);
         }
-        //Funzione per mettere l'online
-        //Argomenti: "username"
-        public function onlineStatus($username){
-            $sql = "UPDATE u_login SET login_at = :login_at, logout_at = :logout_at, status = :status WHERE username = :username";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':login_at', date("h:m:s", time()));
-            $stmt->bindValue(':logout_at', '00:00:00');
-            $stmt->bindValue(':status', 'online');
-            $stmt->bindValue(':username', $username);
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per mettere l'offline
-        public function offlineStatus($data){
-            $sql="UPDATE u_login SET status = :status, logout_at = :logout_at WHERE username = :username";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':status', 'offline');
-            $stmt->bindValue(':logout_at', date("h:m", time()));
-            $stmt->bindValue(':username', Session::get("username"));
-            $result = $stmt->execute();
-            if($result){
-                return true;
-            }else{
-                return false;
-            }
-        }
-        //Funzione per il login utente registrato
         public function userLoginAuthotication($data){
             $username = $data['username'];
             $password = $data['password'];
 
             $checkUsername = $this->checkUsername($username);
             $checkActive = $this->checkActive($username);
-            $checkCredential = $this->checkCredential($username, $password);
-            $online = $this->onlineStatus($username);
+            $chekCredential = $this->checkCredential($username, $password);
 
             if($username == "" || $password == ""){
-                $msg = 'Compilare tutti i campi !';
-                return $msg;
-            }else if(strlen($username) < 3){
-                $msg = 'Username troppo corto, minimo 3 caratteri !';
-                return $msg;
-            }else if($checkUsername == FALSE){
-                $msg = 'Username non trovato !';
-                return $msg;
-            }else if($checkActive == TRUE){
-                $msg = 'Il tuo account è stato temporaneamente disabilitato !';
-                return $msg;
-            }else{
-                if($checkCredential == TRUE || $online != TRUE){
-                    if(!empty($_POST['rem'])){
-                        foreach($_POST['rem'] as $value){
-                            setcookie($username, $password, $value, time() + (86400 * 30), "/");
-                        }
-                    }else{
-                        setcookie($username, $password, '25', time() + (86400 * 30), "/");
-                    }
-                    Session::init();
-                    Session::set('login', TRUE);
-                    Session::set('user_code', $checkCredential->user_code);
-                    Session::set('username', $checkCredential->username);
-                    Session::set('status', $checkCredential->status);
-                    Session::set('sex', $checkCredential->sex);
-                    Session::set('type', $checkCredential->type);
-                    Session::set('msg', 'Hai effettuato il login con successo');
-                    echo "<script>location.href='index.php';</script>";
-                }else{
-                    $msg = 'Username o password errati';
-                    return $msg;
-                }
-            }
-        }
-        //Funzione per il login guest
-        /*public function userGuestLoginAuthotication($data){
-            $username = $data['username'];
-            $guest_code = rand(10, 1000000);
-
-            $checkUsername = $this->checkUsername($username);
-            $checkGuest = $this->checkGuest($username);
-
-            if($username == ""){
                 $msg = 'Compilare i campi di input';
                 return $msg;
-            }else if($checkUsername == TRUE || $checkGuest == TRUE){
-                $msg = 'Nome utente già in uso';
+            }else if($checkUsername != TRUE){
+                $msg = 'Username non trovato';
                 return $msg;
             }else{
-                $sql = "INSERT INTO u_guest(guest_code, username, isActive, type, login_at, status) 
-                        VALUES(:guest_code, :username, :isActive, :type :login_at, :status)";
-                $stmt = $this->db->pdo->prepare($sql);
-                $stmt->bindValue(':guest_code', $guest_code);
-                $stmt->bindValue(':username', $username);
-                $stmt->bindValue(':isActive', 1537);
-                $stmt->bindValue(':type', 1);
-                $stmt->bindValue(':login_at', date("h:i", time()));
-                $stmt->bindValue(':status', 'online');
-                $result = $stmt->execute();
-                if($result){
+                if($checkActive == TRUE){
+                    $msg = 'Utente disattivato';
+                    return $msg;
+                }else if($chekCredential){
                     Session::init();
-                    Session::set('login', TRUE);
-                    Session::set('username', $result->username);
-                    Session::set('msg', 'Hai effettuato il login con successo');
+                    Session::set("login", TRUE);
+                    Session::set("username", $chekCredential->username);
+                    Session::set("warning", $chekCredential->warning);
+                    Session::set("checking", $chekCredential->checking);
+                    Session::set("msg", 'Hai effettuato il login con successo !');
                     echo "<script>location.href='index.php';</script>";
                 }else{
-                    $msg = 'Qualcosa è andato storto';
+                    $msg = 'Oops, qualcosa è andato storto';
                     return $msg;
                 }
-            }
-        }*/
-        //Funzione per aggiornare i dati utente
-        public function updateUserDataSimply($data){
-
-        }
-        //Funzione per vedere i dati utente
-        public function getUserInfo($username){
-            $sql = "SELECT * FROM u_login WHERE username = :username LIMIT 1";
-            $stmt = $this->db->pdo->prepare($sql);
-            $stmt->bindValue(':username', $username);
-            $stmt->execute();
-            $result = $stmt->fetch(PDO::FETCH_ASSOC);
-            if($result){
-                return $result;
-            }else{
-                return false;
             }
         }
     }

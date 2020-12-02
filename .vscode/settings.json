@@ -1,5 +1,19 @@
 {
-    "sqltools.connections": [],
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "default"
+            },
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 3306,
+            "driver": "MySQL",
+            "name": "chat",
+            "database": "chat",
+            "username": "root",
+            "password": "780Impo\"1angey"
+        }
+    ],
     "files.exclude": {
         "**/.classpath": true,
         "**/.project": true,
