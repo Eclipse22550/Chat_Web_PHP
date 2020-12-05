@@ -22,7 +22,7 @@
     <meta name="google-signin-client_id" content="chat-297210.apps.googleusercontent.com">
     <script src="./assets/script/acept.js"></script>
 </head>
-<?php if(Session::get("warning") == '0'){ ?>
+<?php if(Session::get("warning") == '1'){ ?>
     
 <?php }else{ ?>
     <?php if(Session::get("login") == TRUE){ ?>
@@ -45,8 +45,8 @@
                                 <span class="nav__text">Chat</span>
                             </a>
                             <a href="#" class="nav__link">
-                                <i class="fas fa-sim-card nav__icon" ></i>
-                                <span class="nav__text">Post</span>
+                                <i class="fas fa-search nav__icon" ></i>
+                                <span class="nav__text">Cerca</span>
                             </a>
                             <a href="#" class="nav__link">
                                 <i class="fas fa-id-badge nav__icon " ></i>

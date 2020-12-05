@@ -56,7 +56,7 @@
             return $stmt->fetch(PDO::FETCH_OBJ);
         }
         public function userRegistrationSemplice($data){
-            $user_code = rand(10, 1000000);
+            $user_code = rand(10, 892561);
             $email = $data['email'];
             $username = $data['username'];
             $password = $data['password'];
@@ -86,8 +86,9 @@
                 $msg = 'Formato email non valido';
                 return $msg;
             }else{
-                $sql = "INSERT INTO u_login (user_code, username, password, email, name, lname, age, sex, country, state, bio, hobby, photo, isActive, roleid, vis, checking, type, status) 
-                        VALUES(:user_code, :username, :password, :email, :name, :lname, :age, :sex, :country, :state, :bio, :hobby, :photo, :isActive, :roleid, :vis, :checking, :type, :status)";
+
+                $sql = "INSERT INTO u_login (user_code, username, password, email, name, lname, age, sex, country, state, bio, hobby, photo, isActive, roleid, vis, type, status) 
+                        VALUES(:user_code, :username, :password, :email, :name, :lname, :age, :sex, :country, :state, :bio, :hobby, :photo, :isActive, :roleid, :vis, :type, :status)";
                 $stmt = $this->db->pdo->prepare($sql);
                 $stmt->bindValue(':user_code', $user_code);
                 $stmt->bindValue(':username', $username);
@@ -105,68 +106,12 @@
                 $stmt->bindValue(':isActive', 1537);
                 $stmt->bindValue(':roleid', 1540);
                 $stmt->bindValue(':vis', 1538);
-                $stmt->bindValue(':checking', 0);
                 $stmt->bindValue(':type', 1543);
                 $stmt->bindValue(':status', '-');
                 $rsl = $stmt->execute();
                 if($rsl == TRUE){
-                    $sql1 ="INSERT INTO c_search 
-                            (user_code, username, bio, hobby, country, state, age, sex, photo, type, vis, isActive, roleid) 
-                            VALUES (:user_code, :username, :bio, :hobby, :country, :state, :age, :sex, :photo, :type, :vis, :isActive, :roleid)";
-                    $stmt = $this->db->pdo->prepare($sql1);
-                    $stmt->bindValue(':user_code', $user_code);
-                    $stmt->bindValue(':username', $username);
-                    $stmt->bindValue(':bio', '-');
-                    $stmt->bindValue(':hobby', '-');
-                    $stmt->bindValue(':country', '-');
-                    $stmt->bindValue(':state', '-');
-                    $stmt->bindValue(':age', 1549);
-                    $stmt->bindValue(':sex', 1549);
-                    $stmt->bindValue(':photo', '-');
-                    $stmt->bindValue(':type', 1543);
-                    $stmt->bindValue(':vis', 1538);
-                    $stmt->bindValue(':isActive', 1537);
-                    $stmt->bindValue(':roleid', 1540);
-                    $rslt1 = $stmt->execute();
-                    if($rslt1 == TRUE){
-                        /*$receiver = "$email";
-                        $subject = "Attivazione";
-                        $body = "
-                            Congratulazioni!!! Il tuo account è ora creato e attivo.
-                            Qui sotto un riepilogo delle tue informazioni:
-                            
-                            Username: $username
-                            Email: $email
-                            Tipo di registrazione: semplice
-
-                        ";
-                        $sender = "From:angeyimportante780@gmail.com";
-                        if(mail($receiver, $subject, $body, $sender)){
-                            $email_code = rand(10, 100000);
-                            $sql = "INSERT INTO s_email (email_code, receiver, subject, body, sender, mac_adress, ip_adress) 
-                                    VALUES (:email_code, :receiver, :subject, :body, :sender, :mac_adress, :ip_adress)";
-                            $stmt = $this->db->pdo->prepare($sql);
-                            $stmt->bindValue(':email_code', $email_code);
-                            $stmt->bindValue(':receiver', $receiver);
-                            $stmt->bindValue(':subject', $subject);
-                            $stmt->bindValue(':body', $body);
-                            $stmt->bindValue(':sender', $sender);
-                            $stmt->bindValue(':mac_adress', '15A');
-                            $stmt->bindValue(':ip_adress', '192.168.1.20');
-                            $rslt5 = $stmt->execute();
-                            if($rslt5 == TRUE){*/
-                                $msg = 'Utente creato';
-                                return $msg;
-                            /*}else{
-                                $msg = 'Insert 3 fallito';
-                                return $msg;
-                                exit();
-                            }
-                        }*/
-                    }else{
-                        $msg = 'Insert 2 fallito';
-                        return $msg;
-                    }
+                    $msg = 'Utente creato';
+                    return $msg;
                 }else{
                     $msg = 'Oops, qualcosa è andato storto';
                     return $msg;
@@ -196,6 +141,14 @@
             }else if($checkUsername != TRUE){
                 $msg = 'Username non trovato';
                 return $msg;
+            }else if($chekCredential != TRUE){
+                $msg = 'Username o password errati !';
+                return $msg;
+                $cnt = 0;
+                $cnt++;
+                if($cnt == 3){
+                    echo "<script>location.href='reset.php';</script>";
+                }
             }else{
                 if($checkActive == TRUE){
                     $msg = 'Utente disattivato';
@@ -203,15 +156,76 @@
                 }else if($chekCredential){
                     Session::init();
                     Session::set("login", TRUE);
+                    Session::set("user_code", $chekCredential->user_code);
                     Session::set("username", $chekCredential->username);
-                    Session::set("warning", $chekCredential->warning);
-                    Session::set("checking", $chekCredential->checking);
                     Session::set("msg", 'Hai effettuato il login con successo !');
                     echo "<script>location.href='index.php';</script>";
                 }else{
                     $msg = 'Oops, qualcosa è andato storto';
                     return $msg;
                 }
+            }
+        }
+        public function Search($data){
+            $input = $data['input'];
+
+            if($input == ""){
+                $msg = 'Inserire un dato valido !';
+                return $msg;
+            }else{
+                $result = $this->Result($input);
+                if($result == []){
+                    $msg = 'Nessun riscontro';
+                    return $msg;
+                }else{
+                    return $result;
+                }
+            }
+        }
+        public function Result($input){
+            $username = Session::get("username");
+            $sql = "SELECT  username
+            FROM            c_search 
+            WHERE           username 
+            LIKE            '%$input%' 
+            AND NOT         username = '$username'";
+            $stmt = $this->db->pdo->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_OBJ);
+        }
+        public function getUserInfo($user_code){
+            $sql = "SELECT  * 
+                    FROM    c_search 
+                    WHERE   user_code = :user_code 
+                    LIMIT   1";
+            $stmt = $this->db->pdo->prepare($sql);
+            $stmt->bindValue(':user_code', $user_code);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_OBJ);
+            if ($result) {
+                return $result;
+            }else{
+                return false;
+            }
+        }
+        public function updateUserDataSimply(){
+
+        }
+        public function TranslateCode($sex, $type, $vis, $isActive, $roleid){
+            $sql = "SELECT  c.sex, c.type, c.vis, c.isActive, c.roleid, m.code, m.name 
+                    FROM    c_search c, m_coder m
+                    WHERE   c.sex = '$sex'
+                    AND     c.type = '$type'
+                    AND     c.vis = '$vis'
+                    AND     c.isActive = '$isActive'
+                    AND     c.roleid = '$roleid'";
+            $stmt = $this->db->pdo->prepare($sql);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_OBJ);
+            if ($result) {
+                return $result;
+            }else{
+                return false;
             }
         }
     }

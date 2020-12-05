@@ -4,7 +4,7 @@
             if (version_compare(phpversion(), '7.2.33', '<')){
                 if(session_id() == '') {
                     session_start();
-                    Users::DetectSession();
+
                 }
             }else{
                 if(session_status() == PHP_SESSION_NONE){

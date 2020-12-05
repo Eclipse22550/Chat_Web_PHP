@@ -9,14 +9,6 @@
     if(isset($reg_sem)){
         echo $reg_sem;
     }
-
-    /*if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register_completo'])){
-        $register_completo = $chat->userRegistrationCompleto($_POST);
-    }
-
-    if(isset($register_completo)){
-        echo $register_completo;
-    }*/
 ?>
 <link rel="stylesheet" href="./assets/style/form.css">
 <form action="" method="post" action="" name="register" id="register">

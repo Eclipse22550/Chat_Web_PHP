@@ -44,14 +44,56 @@
         </nav>
     </div>
 <?php } ?>
-<div class="dates_sc hide" id="dates_sc">
+<div class="dates_sc show" id="dates_sc">
 <h3>Ciao</h3>
     <form action="" class="" method="post">
         <?php
-            $getUinfo = $chat->getUserInfo();
+            $getUinfo = $chat->getUserInfo(Session::get("user_code"));
             if($getUinfo){
         ?>
             <input type="text" value="<?php echo $getUinfo->username ?>">
+            <?php if($getUinfo->bio == '-' || $getUinfo->hobby == '-' || $getUinfo->country == '-' || $getUinfo->state == '-'){ ?>
+                <input type="text" value="Nessun dato">
+                <input type="text" value="Nessun dato">
+                <input type="text" value="Nessun dato">
+                <input type="text" value="Nessun dato">
+            <?php }else{ ?>
+                <input type="text" value="<?php echo $getUinfo->bio ?>">
+                <input type="text" value="<?php echo $getUinfo->hobby ?>">
+                <input type="text" value="<?php echo $getUinfo->country ?>">
+                <input type="text" value="<?php echo $getUinfo->state ?>">
+            <?php } ?>
+            <?php if($getUinfo->age == '1549'){ ?>
+                <input type="text" name="age" value="1549">Nessun dato</input>
+            <?php }else{ ?>
+                <input type="text" name="age" value="1552">Maggiorenne</inpu>
+            <?php } ?>
+            <select name="sex">
+                <?php if($getUinfo->sex == '1549'){ ?>
+                    <option value="1549" selected>Nessun dato</option>
+                    <option value="1547">Maschile</option>
+                    <option value="1548">Femminile</option>
+                <?php }else if($getUinfo->sex == '1547'){ ?>
+                    <option value="1547" selected>Maschile</option>
+                    <option value="1548">Femminile</option>
+                    <option value="1549">Nessun dato</option>
+                <?php }else{ ?>
+                    <option value="1548" selected>Femminile</option>
+                    <option value="1547">Maschile</option>
+                    <option value="1549">Nessun dato</option>
+                <?php } ?>
+            </select>
+            <input type="text" value="<?php echo $getUinfo->photo ?>">
+            <?php if($getUinfo->type == '1543'){ ?>
+                <input type="text" value="1543">Semplice</input>
+            <?php }else if($getUinfo->type == '1544'){ ?>
+                <input type="text" value="1544">Completa</input>
+            <?php }else{ ?>
+                <input type="text" value="1545">Custom</input>
+            <?php } ?>
+            <input type="text" value="<?php echo $getUinfo->vis ?>">
+            <input type="text" value="<?php echo $getUinfo->isActive ?>">
+            <input type="text" value="<?php echo $getUinfo->roleid ?>">
         <?php } ?>
     </form>
 </div>
